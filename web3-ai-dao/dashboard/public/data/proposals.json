@@ -1,0 +1,265 @@
+{
+  "updatedAt": "2026-06-08T01:28:07.161Z",
+  "proposals": [
+    {
+      "id": 1,
+      "description": "Campanha de marketing DAO",
+      "amount": "2000.0",
+      "recipient": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+      "createdAt": 1780866060,
+      "forVotes": 40000,
+      "againstVotes": 5000,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 1,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": false,
+          "weight": 5000,
+          "timestamp": 1780875564,
+          "blockNumber": 11011764,
+          "txHash": "0x1617346f6b6b0322873fd2a21279b2826b667d8208ca00fd22ee43fab4f7d02a"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Community development: allocate 5000 AIGOV for integrations and DAO tooling",
+      "amount": "5000.0",
+      "recipient": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+      "createdAt": 1780869684,
+      "forVotes": 45000,
+      "againstVotes": 0,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 2,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": true,
+          "weight": 5000,
+          "timestamp": 1780875564,
+          "blockNumber": 11011765,
+          "txHash": "0xc07af54d5041c9b5e18c75c5c77553e159e1e59b0bc5b264e3f4c1f500d0ff92"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Community development: allocate 5000 AIGOV for integrations and DAO tooling",
+      "amount": "5000.0",
+      "recipient": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+      "createdAt": 1780869996,
+      "forVotes": 45000,
+      "againstVotes": 0,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 3,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": true,
+          "weight": 5000,
+          "timestamp": 1780875595,
+          "blockNumber": 11011766,
+          "txHash": "0x89d84e9681fcffe6f2167230b941fcef18a83097c7d88537ca4f207ac8cfc036"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Marketing campaign: grow Projeto Icarus community through articles and social media presence",
+      "amount": "2000.0",
+      "recipient": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+      "createdAt": 1780870260,
+      "forVotes": 40000,
+      "againstVotes": 5000,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 4,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": false,
+          "weight": 5000,
+          "timestamp": 1780875595,
+          "blockNumber": 11011767,
+          "txHash": "0x375d6d352810ffa8bc55d65ffd8fbf6b90f1aeb5d438e7e7cbd92f23aafed9b2"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Community reward: distribute 3000 AIGOV to active members contributing proposals and votes",
+      "amount": "3000.0",
+      "recipient": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+      "createdAt": 1780870272,
+      "forVotes": 45000,
+      "againstVotes": 0,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 5,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": true,
+          "weight": 5000,
+          "timestamp": 1780875625,
+          "blockNumber": 11011768,
+          "txHash": "0x135bdb45d14f8d2c2460dd9b4dab9d7f1774722959bc9a66d6b7478951096155"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "description": "UBI for active holders: distribute 1000 AIGOV to all wallets that voted in the last 30 days",
+      "amount": "1000.0",
+      "recipient": "0xEeC309f7476fB992c60FC008E2bb6D28e2849C23",
+      "createdAt": 1780875612,
+      "forVotes": 50000,
+      "againstVotes": 0,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 6,
+          "voter": "0x22459b3f7e32e4c1ac46fd808beb7cac8c2afe98",
+          "support": true,
+          "weight": 20000,
+          "timestamp": 1780875685,
+          "blockNumber": 11011771,
+          "txHash": "0xa5a9c8518b7a648dfcfa4b11b6668e58cb1712f768cd978d0babfb3f585b2982"
+        },
+        {
+          "proposalId": 6,
+          "voter": "0xfba89d79cc3743b3b241be748b8c2ba76689bcd9",
+          "support": true,
+          "weight": 20000,
+          "timestamp": 1780875685,
+          "blockNumber": 11011771,
+          "txHash": "0x8cbeaa1df4bffab14b20395a7aca44b33ea8c6fd62f7abedb5d53eeab45e4f99"
+        },
+        {
+          "proposalId": 6,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": true,
+          "weight": 10000,
+          "timestamp": 1780875715,
+          "blockNumber": 11011775,
+          "txHash": "0x2d2a7df86c8b81ab3cdf29dcefe8d374691b42a4d2535181a8e0715ad20f8541"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Worker committee: form a sub-DAO of 3 small holders to govern treasury allocations",
+      "amount": "2000.0",
+      "recipient": "0xEeC309f7476fB992c60FC008E2bb6D28e2849C23",
+      "createdAt": 1780875648,
+      "forVotes": 50000,
+      "againstVotes": 0,
+      "executed": false,
+      "exists": true,
+      "voters": [
+        {
+          "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+          "votingPower": 22000
+        },
+        {
+          "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+          "votingPower": 22000
+        }
+      ],
+      "voteEvents": [
+        {
+          "proposalId": 7,
+          "voter": "0x22459b3f7e32e4c1ac46fd808beb7cac8c2afe98",
+          "support": true,
+          "weight": 20000,
+          "timestamp": 1780875715,
+          "blockNumber": 11011774,
+          "txHash": "0x0135100dd1dcffe2562a76d8901e0a3ff64e13fb11507f0373a29e947fd00d69"
+        },
+        {
+          "proposalId": 7,
+          "voter": "0xeec309f7476fb992c60fc008e2bb6d28e2849c23",
+          "support": true,
+          "weight": 10000,
+          "timestamp": 1780875745,
+          "blockNumber": 11011776,
+          "txHash": "0x53667832bdf4f7065127dc8472a96d2f92798ab218e423e6d6d5d774893b3554"
+        },
+        {
+          "proposalId": 7,
+          "voter": "0xfba89d79cc3743b3b241be748b8c2ba76689bcd9",
+          "support": true,
+          "weight": 20000,
+          "timestamp": 1780875745,
+          "blockNumber": 11011776,
+          "txHash": "0x193fac4dc11859dc9d38ea45fa84ec5b97612a00824a5a573e8df8e74f93b3fd"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "proposalCount": 7,
+  "executedCount": 0,
+  "pendingCount": 7,
+  "totalForVotes": 315000,
+  "totalAgainstVotes": 10000,
+  "treasuryBalance": 50000,
+  "tokenAddress": "0xBa063DCeACb592df6eEaEC6f9E529d4D910b15f6",
+  "daoAddress": "0x11Acd2495658Ebc76b927f538Fd6688093Bbb0A1",
+  "bots": [
+    {
+      "address": "0x22459b3F7e32e4C1Ac46FD808BEB7CAC8C2AFE98",
+      "eth": 0.27727033171739096,
+      "tokens": 11000,
+      "reputation": {
+        "xp": 200,
+        "level": "SILVER",
+        "voted": 10,
+        "created": 0,
+        "multiplier": 2
+      }
+    },
+    {
+      "address": "0xFBa89d79Cc3743B3b241Be748B8c2ba76689BCD9",
+      "eth": 0.11573549264692894,
+      "tokens": 11000,
+      "reputation": {
+        "xp": 220,
+        "level": "SILVER",
+        "voted": 7,
+        "created": 0,
+        "multiplier": 2
+      }
+    }
+  ],
+  "updatedAt": "2026-06-08T01:28:07.161Z"
+}
