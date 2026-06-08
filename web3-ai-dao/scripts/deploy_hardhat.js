@@ -13,11 +13,20 @@ async function main() {
   const tokenAddress = await token.getAddress();
   console.log(`\nGovernanceToken deployed: ${tokenAddress}`);
 
+  const ReputationNFT = await hre.ethers.getContractFactory("ReputationNFT");
+  const nft = await ReputationNFT.deploy();
+  await nft.waitForDeployment();
+  const nftAddress = await nft.getAddress();
+  console.log(`ReputationNFT deployed: ${nftAddress}`);
+
   const AIStakeholderDAO = await hre.ethers.getContractFactory("AIStakeholderDAO");
-  const dao = await AIStakeholderDAO.deploy(tokenAddress, deployer.address);
+  const dao = await AIStakeholderDAO.deploy(tokenAddress, deployer.address, nftAddress);
   await dao.waitForDeployment();
   const daoAddress = await dao.getAddress();
   console.log(`AIStakeholderDAO deployed: ${daoAddress}`);
+
+  await nft.connect(deployer).setAuthorizedContract(daoAddress, true);
+  console.log(`DAO authorized on ReputationNFT: ${daoAddress}`);
 
   const DECIMALS = 18n;
   const TOKENS_PER_STAKEHOLDER = 10_000n * 10n ** DECIMALS;
@@ -40,6 +49,7 @@ async function main() {
   console.log("\n--- Save to .env ---");
   console.log(`TOKEN_ADDRESS=${tokenAddress}`);
   console.log(`DAO_ADDRESS=${daoAddress}`);
+  console.log(`REPUTATION_NFT_ADDRESS=${nftAddress}`);
 }
 
 main()

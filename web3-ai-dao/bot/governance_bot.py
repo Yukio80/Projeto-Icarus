@@ -2,9 +2,9 @@ import os
 import time
 import json
 import re
-import threading
+import sys
+import argparse
 from datetime import datetime
-from typing import Optional
 
 from web3 import Web3
 try:
@@ -13,33 +13,30 @@ except ImportError:
     geth_poa_middleware = None
 from dotenv import load_dotenv
 
+from strategies import get_strategy
+
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--key', help='Private key (overrides env)')
+parser.add_argument('--strategy', default=os.getenv("BOT_STRATEGY", "conservative"), help='Strategy: conservative, liberal, analyst')
+parser.add_argument('--cycle', type=int, default=None, help='Cycle interval in seconds')
+args = parser.parse_args()
+
 RPC_URL = os.getenv("RPC_URL", "http://127.0.0.1:8545")
-BOT_PRIVATE_KEY = os.getenv("BOT_PRIVATE_KEY")
+BOT_PRIVATE_KEY = args.key or os.getenv("BOT_PRIVATE_KEY")
 TOKEN_ADDRESS = os.getenv("TOKEN_ADDRESS")
 DAO_ADDRESS = os.getenv("DAO_ADDRESS")
 REPUTATION_NFT_ADDRESS = os.getenv("REPUTATION_NFT_ADDRESS", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 
-CYCLE_INTERVAL = int(os.getenv("BOT_CYCLE_INTERVAL", "30"))
+CYCLE_INTERVAL = args.cycle if args.cycle is not None else int(os.getenv("BOT_CYCLE_INTERVAL", "30"))
 
-GEMINI_AVAILABLE = False
-if GEMINI_API_KEY:
-    try:
-        import google.genai as genai
-        GEMINI_AVAILABLE = True
-    except Exception as e:
-        print(f"Gemini init failed: {e}")
+strategy = get_strategy(args.strategy)
 
-DEEPSEEK_AVAILABLE = False
-if DEEPSEEK_API_KEY:
-    try:
-        from openai import OpenAI
-        DEEPSEEK_AVAILABLE = True
-    except Exception as e:
-        print(f"DeepSeek init failed: {e}")
+GEMINI_AVAILABLE = bool(GEMINI_API_KEY)
+DEEPSEEK_AVAILABLE = bool(DEEPSEEK_API_KEY)
 
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
 if os.getenv("CHAIN_ID") == "31337":
@@ -114,18 +111,25 @@ def get_reputation_info(address: str) -> dict:
     except Exception:
         return {"has_nft": False, "xp": 0, "level": "NONE", "multiplier": 1}
 
-def _build_analysis_prompt(description: str, amount_wei: int, recipient: str) -> str:
+def _build_analysis_prompt(description: str, amount_wei: int, recipient: str, strategy_name: str) -> str:
     return (
-        'You are an AI governance analyst for a DAO.\n'
-        'Analyze this proposal and respond with ONLY a JSON object:\n\n'
-        '{"support": true/false, "reason": "short explanation in Portuguese, max 15 words"}\n\n'
+        f'You are an AI governance analyst for a DAO. Your style: {strategy_name}.\n'
+        'Analyze this proposal across multiple dimensions and respond with ONLY JSON:\n\n'
+        '{\n'
+        '  "support": true/false,\n'
+        '  "confidence": 0-100,\n'
+        '  "reason": "short explanation in Portuguese, max 20 words",\n'
+        '  "risks": ["risk1", "risk2"],\n'
+        '  "benefits": ["benefit1"]\n'
+        '}\n\n'
         f'Proposal: {description}\n'
         f'Amount: {amount_wei / 1e18:.0f} tokens\n'
         f'Recipient: {recipient}\n\n'
         'Rules:\n'
-        '- Say true if it benefits the community\n'
-        '- Say false if it is suspicious, scam, drain, or harmful\n'
-        '- Be conservative: if uncertain, say false'
+        '- support=true if net benefit to community\n'
+        '- support=false if suspicious, scam, drain, or harmful\n'
+        f'- Be {strategy_name}: {"if uncertain, lean towards approval" if strategy_name == "liberal" else "if uncertain, reject"}\n'
+        '- Include specific risks and benefits when identifiable'
     )
 
 def _parse_llm_response(text: str, source: str) -> tuple[bool, int, str] | None:
@@ -134,26 +138,35 @@ def _parse_llm_response(text: str, source: str) -> tuple[bool, int, str] | None:
         result = json.loads(clean)
         support = bool(result.get("support", False))
         reason = result.get("reason", "")
-        score = 5 if support else -5
-        print(f"  {source}: {reason}")
+        confidence = int(result.get("confidence", 50))
+        risks = result.get("risks", [])
+        benefits = result.get("benefits", [])
+        score = confidence if support else -confidence
+        details = []
+        if benefits: details.append(f"benefícios: {', '.join(benefits[:2])}")
+        if risks: details.append(f"riscos: {', '.join(risks[:2])}")
+        detail_str = f" ({'; '.join(details)})" if details else ""
+        print(f"  {source}: {reason}{detail_str}")
         return support, score, reason
     except Exception:
         return None
 
 def analyze_proposal(description: str, amount_wei: int = 0, recipient: str = "") -> tuple[bool, int, str]:
-    prompt = _build_analysis_prompt(description, amount_wei, recipient)
+    prompt = _build_analysis_prompt(description, amount_wei, recipient, strategy.name)
 
     if GEMINI_AVAILABLE:
         try:
             import google.genai as genai
             client = genai.Client(api_key=GEMINI_API_KEY, http_options={"timeout": 10000})
             resp = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.0-flash-lite",
                 contents=prompt,
             )
             result = _parse_llm_response(resp.text, "Gemini")
             if result:
                 return result
+        except ImportError:
+            print("  Gemini: google.genai not installed")
         except Exception as e:
             msg = str(e)
             if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
@@ -173,32 +186,14 @@ def analyze_proposal(description: str, amount_wei: int = 0, recipient: str = "")
             result = _parse_llm_response(resp.choices[0].message.content, "DeepSeek")
             if result:
                 return result
+        except ImportError:
+            print("  DeepSeek: openai not installed")
         except Exception as e:
             print(f"  DeepSeek error: {e}")
 
-    desc_lower = description.lower()
-
-    positive_keywords = [
-        'marketing', 'growth', 'security', 'audit', 'development',
-        'community', 'grant', 'ecosystem', 'partnership', 'research',
-        'education', 'open source', 'integration', 'upgrade', 'bug bounty',
-        'infrastructure', 'governance', 'staking', 'liquidity', 'dao'
-    ]
-
-    negative_keywords = [
-        'scam', 'fake', 'withdraw all', 'drain', 'rug', 'pump and dump',
-        'ponzi', 'exit scam', 'malicious'
-    ]
-
-    score = 0
-    for kw in positive_keywords:
-        if kw in desc_lower:
-            score += 1
-    for kw in negative_keywords:
-        if kw in desc_lower:
-            score -= 3
-
-    return score > 0, score, ""
+    result = strategy.analyze(description, amount_wei, recipient)
+    print(f"  {strategy.name}: {result.reason}")
+    return result.support, result.score, result.reason
 
 def send_transaction(tx):
     signed = bot_account.sign_transaction(tx)
@@ -207,21 +202,23 @@ def send_transaction(tx):
     return receipt
 
 def vote_on_proposal(proposal_id: int, support: bool):
+    gas_price = int(w3.eth.gas_price * 1.3)
     tx = dao_contract.functions.vote(proposal_id, support).build_transaction({
         'from': bot_address,
         'nonce': w3.eth.get_transaction_count(bot_address),
         'gas': 200000,
-        'gasPrice': w3.eth.gas_price,
+        'gasPrice': gas_price,
     })
     receipt = send_transaction(tx)
     return receipt
 
 def execute_proposal(proposal_id: int):
+    gas_price = int(w3.eth.gas_price * 1.3)
     tx = dao_contract.functions.executeProposal(proposal_id).build_transaction({
         'from': bot_address,
         'nonce': w3.eth.get_transaction_count(bot_address),
         'gas': 300000,
-        'gasPrice': w3.eth.gas_price,
+        'gasPrice': gas_price,
     })
     receipt = send_transaction(tx)
     return receipt
@@ -246,16 +243,21 @@ def process_proposals():
 
                 if support:
                     receipt = vote_on_proposal(pid, True)
-                    print(f"  Voted FOR — TX: {receipt['transactionHash'].hex()}")
+                    tx_link = f"{receipt['transactionHash'].hex()}"
+                    print(f"  Voted FOR — TX: {tx_link}")
+                    notify_telegram(f"✅ {strategy.name} votou FOR na proposal #{pid}")
                 else:
                     receipt = vote_on_proposal(pid, False)
-                    print(f"  Voted AGAINST — TX: {receipt['transactionHash'].hex()}")
+                    tx_link = f"{receipt['transactionHash'].hex()}"
+                    print(f"  Voted AGAINST — TX: {tx_link}")
+                    notify_telegram(f"❌ {strategy.name} votou AGAINST na proposal #{pid}")
             else:
                 print(f"[{datetime.now().isoformat()}] Already voted on #{pid}")
 
             if can_execute(pid, prop):
                 receipt = execute_proposal(pid)
                 print(f"[{datetime.now().isoformat()}] Executed proposal #{pid} — TX: {receipt['transactionHash'].hex()}")
+                notify_telegram(f"⚡ Proposal #{pid} executada!")
 
         except Exception as e:
             print(f"[{datetime.now().isoformat()}] Error processing #{pid}: {e}")
@@ -274,16 +276,35 @@ def can_execute(proposal_id: int, prop) -> bool:
     now = w3.eth.get_block('latest')['timestamp']
     if now < prop[4] + dao_contract.functions.votingPeriod().call():
         return False
+    safe, msg = strategy.verify_calldata(prop, w3)
+    if not safe:
+        print(f"  ⚠️  Execução bloqueada ({strategy.name}): {msg}")
+        return False
     return True
+
+TELEGRAM_BRIDGE = os.path.expanduser("~/.opencode/telegram-bridge.json")
+TELEGRAM_SCRIPT = os.path.expanduser("~/.opencode/skills/shared_skills/telegram-bridge-send/scripts/send_telegram.py")
+
+def notify_telegram(message: str):
+    if not os.path.exists(TELEGRAM_BRIDGE) or not os.path.exists(TELEGRAM_SCRIPT):
+        return
+    import subprocess
+    try:
+        subprocess.run(
+            ["python3", TELEGRAM_SCRIPT, "--message", message],
+            capture_output=True, text=True, timeout=10
+        )
+    except Exception:
+        pass
 
 def print_status():
     eth_bal = get_eth_balance(bot_address)
     token_bal = get_token_balance(bot_address)
     rep = get_reputation_info(bot_address)
     print(f"\n{'='*50}")
-    print(f"🤖 Bot: {bot_address}")
+    print(f"🤖 {strategy.name.capitalize()} Bot: {bot_address}")
     print(f"⛓️  Chain ID: {w3.eth.chain_id}")
-    print(f"💰 ETH: {eth_bal:.2f}")
+    print(f"💰 ETH: {eth_bal:.4f}")
     print(f"🗳️  Voting Power: {token_bal:.2f} tokens")
     if rep["has_nft"]:
         effective = token_bal * rep["multiplier"]
@@ -308,7 +329,7 @@ if __name__ == "__main__":
         print("Missing env vars. Check .env")
         exit(1)
 
-    print("AI Governance Bot started")
+    print(f"AI Governance Bot — Strategy: {strategy.name}")
     print(f"Cycle interval: {CYCLE_INTERVAL}s\n")
 
     try:

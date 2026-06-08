@@ -1,0 +1,10 @@
+.env
+node_modules/
+logs/
+*.pyc
+__pycache__/
+dist/
+*state.json
+indexer/state.json
+*.egg-info/
+dashboard/public/data/

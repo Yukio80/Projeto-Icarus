@@ -15,5 +15,9 @@ module.exports = {
     hardhat: {
       chainId: 31337,
     },
+    sepolia: {
+      url: process.env.RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+    },
   },
 };
