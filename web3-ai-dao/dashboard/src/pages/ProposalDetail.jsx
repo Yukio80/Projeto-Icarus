@@ -1,34 +1,22 @@
-import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchProposals, fetchVotes, truncateAddress, proposalStatus, timeAgo } from '../helpers/api';
+import { fetchProposals, fetchVotes, truncateAddress, proposalStatus } from '../helpers/api';
+import usePolling from '../hooks/usePolling';
 import VoteBar from '../components/VoteBar';
 
 export default function ProposalDetail() {
   const { id } = useParams();
-  const [proposal, setProposal] = useState(null);
-  const [votes, setVotes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = usePolling(
+    async () => {
+      const [proposals, allVotes] = await Promise.all([fetchProposals(), fetchVotes()]);
+      return {
+        proposal: proposals.find(x => x.id === parseInt(id)),
+        votes: allVotes.filter(x => x.proposalId === parseInt(id)),
+      };
+    },
+    { interval: 15000, deps: [id] }
+  );
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        const [proposals, allVotes] = await Promise.all([fetchProposals(), fetchVotes()]);
-        if (!mounted) return;
-        const p = proposals.find(x => x.id === parseInt(id));
-        const v = allVotes.filter(x => x.proposalId === parseInt(id));
-        setProposal(p);
-        setVotes(v);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-    load();
-    const interval = setInterval(load, 15000);
-    return () => { mounted = false; clearInterval(interval); };
-  }, [id]);
+  const proposal = data?.proposal;
 
   if (loading) {
     return <p className="text-icarus-muted animate-pulse mt-8">Carregando...</p>;

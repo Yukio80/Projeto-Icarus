@@ -1,31 +1,20 @@
-import { useState, useEffect } from 'react';
 import { fetchRegistry, fetchStatus, fetchProposals, truncateAddress } from '../helpers/api';
+import usePolling from '../hooks/usePolling';
 
 export default function Bots() {
-  const [registry, setRegistry] = useState([]);
-  const [status, setStatus] = useState(null);
-  const [proposals, setProposals] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = usePolling(
+    async () => {
+      const [registry, status, proposals] = await Promise.all([
+        fetchRegistry(), fetchStatus(), fetchProposals(),
+      ]);
+      return { registry, status, proposals };
+    },
+    { interval: 30000 }
+  );
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        const [r, s, p] = await Promise.all([fetchRegistry(), fetchStatus(), fetchProposals()]);
-        if (!mounted) return;
-        setRegistry(r);
-        setStatus(s);
-        setProposals(p);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-    load();
-    const interval = setInterval(load, 30000);
-    return () => { mounted = false; clearInterval(interval); };
-  }, []);
+  const registry = data?.registry || [];
+  const status = data?.status;
+  const proposals = data?.proposals || [];
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><p className="text-icarus-muted animate-pulse">Carregando bots...</p></div>;

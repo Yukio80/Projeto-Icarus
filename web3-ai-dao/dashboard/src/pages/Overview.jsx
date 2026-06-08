@@ -1,34 +1,26 @@
-import { useState, useEffect } from 'react';
 import { fetchStatus, fetchProposals, fetchRegistry, truncateAddress } from '../helpers/api';
+import usePolling from '../hooks/usePolling';
 import StatusCard from '../components/StatusCard';
 import ProposalRow from '../components/ProposalRow';
 
 export default function Overview() {
-  const [status, setStatus] = useState(null);
-  const [proposals, setProposals] = useState([]);
-  const [registry, setRegistry] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, loading, error } = usePolling(
+    async () => {
+      const [status, proposals, registry] = await Promise.all([
+        fetchStatus(), fetchProposals(), fetchRegistry(),
+      ]);
+      return {
+        status,
+        proposals: proposals.slice(-5).reverse(),
+        registry,
+      };
+    },
+    { interval: 15000 }
+  );
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        const [s, p, r] = await Promise.all([fetchStatus(), fetchProposals(), fetchRegistry()]);
-        if (!mounted) return;
-        setStatus(s);
-        setProposals(p.slice(-5).reverse());
-        setRegistry(r);
-      } catch (e) {
-        if (mounted) setError(e.message);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-    load();
-    const interval = setInterval(load, 15000);
-    return () => { mounted = false; clearInterval(interval); };
-  }, []);
+  const status = data?.status;
+  const proposals = data?.proposals || [];
+  const registry = data?.registry || [];
 
   if (loading) {
     return (
